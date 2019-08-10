@@ -1,7 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Image } from 'react-native';
-import Background from '~/components/Background';
+import PropTypes from 'prop-types';
 
+import { signInRequest } from '~/store/modules/auth/actions';
+
+import Background from '~/components/Background';
 import logo from '~/assets/logo.png';
 
 import {
@@ -15,9 +19,17 @@ import {
 } from './styles';
 
 export default function SignIn({ navigation }) {
+  const dispatch = useDispatch();
   const passwordRef = useRef();
 
-  function handleSubmit() {}
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const loading = useSelector(state => state.auth.loading);
+
+  async function handleSubmit() {
+    dispatch(signInRequest({ email, password }));
+  }
 
   return (
     <Background>
@@ -32,6 +44,8 @@ export default function SignIn({ navigation }) {
             keyboardType="email-address"
             returnKeyType="next"
             onSubmitEditing={() => passwordRef.current.focus()}
+            value={email}
+            onChangeText={setEmail}
           />
           <FormInput
             icon="lock-outline"
@@ -41,9 +55,13 @@ export default function SignIn({ navigation }) {
             returnKeyType="send"
             onSubmitEditing={handleSubmit}
             ref={passwordRef}
+            value={password}
+            onChangeText={setPassword}
           />
 
-          <SubmitButton onPress={handleSubmit}>Sign In</SubmitButton>
+          <SubmitButton loading={loading} onPress={handleSubmit}>
+            Sign In
+          </SubmitButton>
         </Form>
         <GoRegister>
           <GoRegisterText>Don&apos;t have an account?</GoRegisterText>
@@ -55,3 +73,9 @@ export default function SignIn({ navigation }) {
     </Background>
   );
 }
+
+SignIn.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
