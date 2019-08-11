@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import en from 'date-fns/locale/en-US';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { showMessage } from 'react-native-flash-message';
 
 import api from '~/services/api';
 
@@ -19,6 +20,7 @@ import {
   Date,
   Location,
   Organizer,
+  SubscribeButton,
 } from './styles';
 
 export default function Dashboard() {
@@ -40,6 +42,29 @@ export default function Dashboard() {
 
     loadMeetups();
   }, []);
+
+  async function handleSubscribe(id) {
+    try {
+      await api.post(`meetups/${id}/subscriptions`);
+
+      showMessage({
+        message: 'Subscribed to meeting!',
+        type: 'success',
+      });
+    } catch (err) {
+      if (err.response) {
+        showMessage({
+          message: err.response.data.error,
+          type: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Connection error.',
+          type: 'danger',
+        });
+      }
+    }
+  }
 
   return (
     <Background>
@@ -69,6 +94,14 @@ export default function Dashboard() {
                   <Icon name="person" size={16} color="rgba(0, 0, 0, 0.6)" />
                   <Organizer>{item.user.name}</Organizer>
                 </MeetupInfo>
+
+                <SubscribeButton
+                  onPress={() => {
+                    handleSubscribe(item.id);
+                  }}
+                >
+                  Subscribe
+                </SubscribeButton>
               </MeetupBody>
             </Meetup>
           )}

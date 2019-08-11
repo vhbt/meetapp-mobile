@@ -1,8 +1,9 @@
 import styled from 'styled-components/native';
+import Button from '~/components/Button';
 
 export const Container = styled.View`
   flex: 1;
-  padding: 30px;
+  padding: 20px 30px;
 `;
 
 export const MeetupList = styled.FlatList.attrs({
@@ -22,8 +23,8 @@ export const Banner = styled.Image`
 
 export const MeetupBody = styled.View`
   width: 100%;
-  height: 145px;
-  padding: 20px;
+  height: 195px;
+  padding: 10px 20px;
   background: #fff;
 
   border-bottom-left-radius: 4px;
@@ -58,4 +59,8 @@ export const Organizer = styled.Text`
   font-size: 16px;
   color: rgba(0, 0, 0, 0.6);
   margin-left: 5px;
+`;
+
+export const SubscribeButton = styled(Button)`
+  margin-top: 5px;
 `;
