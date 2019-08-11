@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { format, parseISO } from 'date-fns';
 import en from 'date-fns/locale/en-US';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -8,40 +9,60 @@ import api from '~/services/api';
 
 import Background from '~/components/Background';
 import Header from '~/components/Header';
+import DatePicker from '~/components/DatePicker';
 
 import {
   Container,
+  LoadingIndicator,
   MeetupList,
   Meetup,
   Banner,
   MeetupBody,
   MeetupInfo,
   Title,
-  Date,
+  DateText,
   Location,
   Organizer,
   SubscribeButton,
+  Empty,
+  EmptyText,
 } from './styles';
 
 export default function Dashboard() {
+  const [loading, setLoading] = useState(true);
   const [meetups, setMeetups] = useState([]);
+  const [searchDate, setSearchDate] = useState(new Date());
+
+  const user = useSelector(state => state.user.user);
 
   useEffect(() => {
     async function loadMeetups() {
-      const response = await api.get('meetups');
+      const response = await api.get('meetups', {
+        params: {
+          date: searchDate,
+        },
+      });
 
       const data = response.data.map(meetup => ({
         ...meetup,
-        formattedDate: format(parseISO(meetup.date), "MM/dd/yyyy '-' hh'h'mm", {
-          locale: en,
-        }),
+        subscribed: !!meetup.Subscriptions.find(
+          subscription => subscription.user_id === user.id
+        ),
+        formattedDate: format(
+          parseISO(meetup.date),
+          "dd 'of' MMMM, yyyy '-' hh'h'mm",
+          {
+            locale: en,
+          }
+        ),
       }));
 
       setMeetups(data);
+      setLoading(false);
     }
 
     loadMeetups();
-  }, []);
+  }, [searchDate, user.id]);
 
   async function handleSubscribe(id) {
     try {
@@ -51,6 +72,15 @@ export default function Dashboard() {
         message: 'Subscribed to meeting!',
         type: 'success',
       });
+
+      setMeetups(
+        meetups.map(meetup => {
+          if (meetup.id === id) {
+            return { ...meetup, subscribed: true };
+          }
+          return meetup;
+        })
+      );
     } catch (err) {
       if (err.response) {
         showMessage({
@@ -66,46 +96,77 @@ export default function Dashboard() {
     }
   }
 
+  function handleDateChange(date) {
+    setLoading(true);
+    setSearchDate(date);
+  }
+
   return (
     <Background>
       <Header />
       <Container>
-        <MeetupList
-          data={meetups}
-          keyExtractor={item => String(item.id)}
-          renderItem={({ item }) => (
-            <Meetup>
-              <Banner source={{ uri: item.banner.url }} />
-              <MeetupBody>
-                <Title>{item.title}</Title>
-                <MeetupInfo>
-                  <Icon name="event" size={16} color="rgba(0, 0, 0, 0.6)" />
-                  <Date>{item.formattedDate}</Date>
-                </MeetupInfo>
-                <MeetupInfo>
-                  <Icon
-                    name="location-on"
-                    size={16}
-                    color="rgba(0, 0, 0, 0.6)"
-                  />
-                  <Location>{item.location}</Location>
-                </MeetupInfo>
-                <MeetupInfo>
-                  <Icon name="person" size={16} color="rgba(0, 0, 0, 0.6)" />
-                  <Organizer>{item.user.name}</Organizer>
-                </MeetupInfo>
+        <DatePicker onChange={handleDateChange} />
+        {loading ? (
+          <LoadingIndicator size="large" color="rgb(70, 128, 255)" />
+        ) : (
+          <MeetupList
+            data={meetups}
+            keyExtractor={item => String(item.id)}
+            ListEmptyComponent={() => (
+              <Empty>
+                <Icon
+                  name="sentiment-dissatisfied"
+                  size={64}
+                  color="rgba(0, 0, 0, 0.6);"
+                />
+                <EmptyText>
+                  Oopss... Looks like there is nothing to see here.
+                </EmptyText>
+              </Empty>
+            )}
+            renderItem={({ item }) => (
+              <Meetup>
+                <Banner source={{ uri: item.banner.url }} />
+                <MeetupBody>
+                  <Title>{item.title}</Title>
+                  <MeetupInfo>
+                    <Icon name="event" size={16} color="rgba(0, 0, 0, 0.6)" />
+                    <DateText>{item.formattedDate}</DateText>
+                  </MeetupInfo>
+                  <MeetupInfo>
+                    <Icon
+                      name="location-on"
+                      size={16}
+                      color="rgba(0, 0, 0, 0.6)"
+                    />
+                    <Location>{item.location}</Location>
+                  </MeetupInfo>
+                  <MeetupInfo>
+                    <Icon name="person" size={16} color="rgba(0, 0, 0, 0.6)" />
+                    <Organizer>{item.user.name}</Organizer>
+                  </MeetupInfo>
 
-                <SubscribeButton
-                  onPress={() => {
-                    handleSubscribe(item.id);
-                  }}
-                >
-                  Subscribe
-                </SubscribeButton>
-              </MeetupBody>
-            </Meetup>
-          )}
-        />
+                  <SubscribeButton
+                    onPress={() => {
+                      handleSubscribe(item.id);
+                    }}
+                    enabled={!item.past && !item.subscribed}
+                  >
+                    {(() => {
+                      if (item.past) {
+                        return 'Not available anymore';
+                      }
+                      if (item.subscribed) {
+                        return 'Subscribed!';
+                      }
+                      return 'Subscribe';
+                    })()}
+                  </SubscribeButton>
+                </MeetupBody>
+              </Meetup>
+            )}
+          />
+        )}
       </Container>
     </Background>
   );

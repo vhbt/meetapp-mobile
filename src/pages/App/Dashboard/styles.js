@@ -1,9 +1,14 @@
 import styled from 'styled-components/native';
+import { ActivityIndicator } from 'react-native';
 import Button from '~/components/Button';
 
 export const Container = styled.View`
   flex: 1;
   padding: 20px 30px;
+`;
+
+export const LoadingIndicator = styled(ActivityIndicator)`
+  margin-top: 40px;
 `;
 
 export const MeetupList = styled.FlatList.attrs({
@@ -43,7 +48,7 @@ export const Title = styled.Text`
   margin-bottom: 10px;
 `;
 
-export const Date = styled.Text`
+export const DateText = styled.Text`
   font-size: 16px;
   color: rgba(0, 0, 0, 0.6);
   margin-left: 5px;
@@ -63,4 +68,21 @@ export const Organizer = styled.Text`
 
 export const SubscribeButton = styled(Button)`
   margin-top: 5px;
+  opacity: ${props => (props.enabled ? '1' : '0.6')};
+`;
+
+export const Empty = styled.View`
+  padding: 50px;
+
+  justify-content: center;
+  align-items: center;
+`;
+
+export const EmptyText = styled.Text`
+  margin-top: 15px;
+  font-size: 16;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.6);
+  text-align: center;
+  width: 180px;
 `;
