@@ -8,6 +8,8 @@ import SignIn from './pages/Auth/SignIn';
 import SignUp from './pages/Auth/SignUp';
 
 import Dashboard from './pages/App/Dashboard';
+import Subscriptions from './pages/App/Subscriptions';
+import Profile from './pages/App/Profile';
 
 export default (isSigned = false) =>
   createAppContainer(
@@ -19,6 +21,8 @@ export default (isSigned = false) =>
         }),
         App: createBottomTabNavigator({
           Dashboard,
+          Subscriptions,
+          Profile,
         }),
       },
       {
