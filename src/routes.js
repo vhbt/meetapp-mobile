@@ -1,8 +1,11 @@
+import React from 'react';
 import {
   createAppContainer,
   createSwitchNavigator,
   createBottomTabNavigator,
 } from 'react-navigation';
+
+import Header from '~/components/Header';
 
 import SignIn from './pages/Auth/SignIn';
 import SignUp from './pages/Auth/SignUp';
@@ -19,11 +22,18 @@ export default (isSigned = false) =>
           SignIn,
           SignUp,
         }),
-        App: createBottomTabNavigator({
-          Dashboard,
-          Subscriptions,
-          Profile,
-        }),
+        App: createBottomTabNavigator(
+          {
+            Dashboard,
+            Subscriptions,
+            Profile,
+          },
+          {
+            tabBarOptions: {
+              keyboardHidesTabBar: true,
+            },
+          }
+        ),
       },
       {
         initialRouteName: isSigned ? 'App' : 'Auth',

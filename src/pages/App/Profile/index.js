@@ -1,32 +1,66 @@
-import React, { useRef } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useRef, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import Background from '~/components/Background';
+import Header from '~/components/Header';
 
-import { Container, Form, FormInput, Separator } from './styles';
+import {
+  Container,
+  Form,
+  FormInput,
+  Separator,
+  SubmitButton,
+  LogoutButton,
+} from './styles';
+
+import { signOut } from '~/store/modules/auth/actions';
+import { updateProfileRequest } from '~/store/modules/user/actions';
 
 export default function Profile() {
+  const dispatch = useDispatch();
+
   const emailRef = useRef();
-  const oldPasswordRef = useRef();
   const passwordRef = useRef();
   const confirmPasswordRef = useRef();
 
   const user = useSelector(state => state.user.user);
 
-  function handleSubmit() {}
+  const [name, setName] = useState(user.name);
+  const [email, setEmail] = useState(user.email);
+  const [oldPassword, setOldPassword] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  function handleSubmit() {
+    dispatch(
+      updateProfileRequest({
+        name,
+        email,
+        oldPassword,
+        password,
+        confirmPassword,
+      })
+    );
+  }
+
+  function handleLogout() {
+    dispatch(signOut());
+  }
 
   return (
     <Background>
+      <Header />
       <Container>
         <Form>
           <FormInput
             icon="person-outline"
             placeholder="Full name"
             autoCorrect={false}
-            value={user.name}
+            value={name}
             returnKeyType="next"
             onSubmitEditing={() => emailRef.current.focus()}
+            onChangeText={setName}
           />
           <FormInput
             icon="mail-outline"
@@ -34,10 +68,9 @@ export default function Profile() {
             keyboardType="email-address"
             autoCorrect={false}
             autoCapitalize="none"
-            returnKeyType="next"
-            value={user.email}
-            onSubmitEditing={() => oldPasswordRef.current.focus()}
+            value={email}
             ref={emailRef}
+            onChangeText={setEmail}
           />
 
           <Separator />
@@ -49,7 +82,8 @@ export default function Profile() {
             returnKeyType="next"
             autoCapitalize="none"
             onSubmitEditing={() => passwordRef.current.focus()}
-            ref={oldPasswordRef}
+            value={oldPassword}
+            onChangeText={setOldPassword}
           />
           <FormInput
             icon="lock-outline"
@@ -59,16 +93,21 @@ export default function Profile() {
             autoCapitalize="none"
             onSubmitEditing={() => confirmPasswordRef.current.focus()}
             ref={passwordRef}
+            value={password}
+            onChangeText={setPassword}
           />
           <FormInput
             icon="lock-outline"
             placeholder="Confirm your new password"
             secureTextEntry
-            returnKeyType="send"
             autoCapitalize="none"
-            onSubmitEditing={handleSubmit}
             ref={confirmPasswordRef}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
           />
+
+          <SubmitButton onPress={handleSubmit}>Update</SubmitButton>
+          <LogoutButton onPress={handleLogout}>Logout</LogoutButton>
         </Form>
       </Container>
     </Background>

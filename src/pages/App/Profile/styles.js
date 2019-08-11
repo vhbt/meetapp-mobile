@@ -1,12 +1,21 @@
+import { Platform } from 'react-native';
 import styled from 'styled-components/native';
 import Input from '~/components/Input';
+import Button from '~/components/Button';
 
-export const Container = styled.View`
+export const Container = styled.KeyboardAvoidingView.attrs({
+  enabled: Platform.OS === 'ios',
+  behavior: 'padding',
+})`
   flex: 1;
-  padding: 30px;
+  justify-content: center;
+  align-items: center;
+  padding: 0 30px;
 `;
 
-export const Form = styled.View``;
+export const Form = styled.View`
+  align-self: stretch;
+`;
 
 export const FormInput = styled(Input)`
   margin-top: 10px;
@@ -18,3 +27,13 @@ export const Separator = styled.View`
   width: 100%;
   background: rgba(0, 0, 0, 0.1);
 `;
+
+export const SubmitButton = styled(Button).attrs({
+  background: 'rgb(70, 128, 255)',
+})`
+  margin: 15px 0 10px;
+`;
+
+export const LogoutButton = styled(Button).attrs({
+  background: 'rgb(251, 97, 127)',
+})``;

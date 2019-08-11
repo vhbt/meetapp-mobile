@@ -19,9 +19,7 @@ export const FormInput = styled(Input)`
   margin-top: 10px;
 `;
 
-export const SubmitButton = styled(Button).attrs({
-  background: 'rgb(70, 128, 255)',
-})`
+export const SubmitButton = styled(Button)`
   margin: 15px 0;
 `;
 
