@@ -24,6 +24,7 @@ export const Banner = styled.Image`
   height: 120px;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
+  background: rgba(255, 255, 255, 0.4);
 `;
 
 export const MeetupBody = styled.View`
@@ -71,18 +72,4 @@ export const SubscribeButton = styled(Button)`
   opacity: ${props => (props.enabled ? '1' : '0.6')};
 `;
 
-export const Empty = styled.View`
-  padding: 50px;
-
-  justify-content: center;
-  align-items: center;
-`;
-
-export const EmptyText = styled.Text`
-  margin-top: 15px;
-  font-size: 16;
-  font-weight: bold;
-  color: rgba(0, 0, 0, 0.6);
-  text-align: center;
-  width: 180px;
-`;
+export const EndOfLineText = styled.Text``;

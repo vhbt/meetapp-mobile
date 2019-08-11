@@ -10,6 +10,7 @@ import api from '~/services/api';
 import Background from '~/components/Background';
 import Header from '~/components/Header';
 import DatePicker from '~/components/DatePicker';
+import EmptyContainer from '~/components/EmptyContainer';
 
 import {
   Container,
@@ -24,12 +25,14 @@ import {
   Location,
   Organizer,
   SubscribeButton,
-  Empty,
-  EmptyText,
 } from './styles';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefrehing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [endOfList, setEndOfList] = useState(false);
+
   const [meetups, setMeetups] = useState([]);
   const [searchDate, setSearchDate] = useState(new Date());
 
@@ -63,6 +66,68 @@ export default function Dashboard() {
 
     loadMeetups();
   }, [searchDate, user.id]);
+
+  async function refresh() {
+    setRefrehing(true);
+
+    const response = await api.get('meetups', {
+      params: {
+        date: searchDate,
+      },
+    });
+
+    const data = response.data.map(meetup => ({
+      ...meetup,
+      subscribed: !!meetup.Subscriptions.find(
+        subscription => subscription.user_id === user.id
+      ),
+      formattedDate: format(
+        parseISO(meetup.date),
+        "dd 'of' MMMM, yyyy '-' hh'h'mm",
+        {
+          locale: en,
+        }
+      ),
+    }));
+
+    setMeetups(data);
+    setRefrehing(false);
+    setPage(1);
+    setEndOfList(false);
+  }
+
+  async function loadMore(p) {
+    if (!endOfList) {
+      const response = await api.get('meetups', {
+        params: {
+          date: searchDate,
+          page: p,
+        },
+      });
+
+      const data = response.data.map(meetup => ({
+        ...meetup,
+        subscribed: !!meetup.Subscriptions.find(
+          subscription => subscription.user_id === user.id
+        ),
+        formattedDate: format(
+          parseISO(meetup.date),
+          "dd 'of' MMMM, yyyy '-' hh'h'mm",
+          {
+            locale: en,
+          }
+        ),
+      }));
+
+      setMeetups([...meetups, ...data]);
+
+      if (data.length >= 1) {
+        setPage(page + 1);
+      } else {
+        setEndOfList(true);
+      }
+    }
+  }
 
   async function handleSubscribe(id) {
     try {
@@ -112,18 +177,11 @@ export default function Dashboard() {
           <MeetupList
             data={meetups}
             keyExtractor={item => String(item.id)}
-            ListEmptyComponent={() => (
-              <Empty>
-                <Icon
-                  name="sentiment-dissatisfied"
-                  size={64}
-                  color="rgba(0, 0, 0, 0.6);"
-                />
-                <EmptyText>
-                  Oopss... Looks like there is nothing to see here.
-                </EmptyText>
-              </Empty>
-            )}
+            ListEmptyComponent={<EmptyContainer />}
+            refreshing={refreshing}
+            onRefresh={refresh}
+            onEndReachedThreshold={0.5}
+            onEndReached={() => loadMore(page + 1)}
             renderItem={({ item }) => (
               <Meetup>
                 <Banner source={{ uri: item.banner.url }} />
