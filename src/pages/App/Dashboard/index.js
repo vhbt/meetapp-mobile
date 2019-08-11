@@ -32,6 +32,7 @@ export default function Dashboard() {
   const [refreshing, setRefrehing] = useState(false);
   const [page, setPage] = useState(1);
   const [endOfList, setEndOfList] = useState(false);
+  const [fetching, setFetching] = useState(true);
 
   const [meetups, setMeetups] = useState([]);
   const [searchDate, setSearchDate] = useState(new Date());
@@ -40,92 +41,57 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function loadMeetups() {
-      const response = await api.get('meetups', {
-        params: {
-          date: searchDate,
-        },
-      });
+      if (!endOfList || !refreshing) {
+        const response = await api.get('meetups', {
+          params: {
+            date: searchDate,
+            page,
+          },
+        });
 
-      const data = response.data.map(meetup => ({
-        ...meetup,
-        subscribed: !!meetup.Subscriptions.find(
-          subscription => subscription.user_id === user.id
-        ),
-        formattedDate: format(
-          parseISO(meetup.date),
-          "dd 'of' MMMM, yyyy '-' hh'h'mm",
-          {
-            locale: en,
-          }
-        ),
-      }));
+        const data = response.data.map(meetup => ({
+          ...meetup,
+          subscribed: !!meetup.Subscriptions.find(
+            subscription => subscription.user_id === user.id
+          ),
+          formattedDate: format(
+            parseISO(meetup.date),
+            "dd 'of' MMMM, yyyy '-' hh'h'mm",
+            {
+              locale: en,
+            }
+          ),
+        }));
 
-      setMeetups(data);
+        if (data.length === 0) {
+          setEndOfList(true);
+        }
+
+        setMeetups([...meetups, ...data]);
+      }
+
       setLoading(false);
+      setRefrehing(false);
+      setFetching(false);
     }
 
     loadMeetups();
-  }, [searchDate, user.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, searchDate, user.id]);
 
   async function refresh() {
-    setRefrehing(true);
-
-    const response = await api.get('meetups', {
-      params: {
-        date: searchDate,
-      },
-    });
-
-    const data = response.data.map(meetup => ({
-      ...meetup,
-      subscribed: !!meetup.Subscriptions.find(
-        subscription => subscription.user_id === user.id
-      ),
-      formattedDate: format(
-        parseISO(meetup.date),
-        "dd 'of' MMMM, yyyy '-' hh'h'mm",
-        {
-          locale: en,
-        }
-      ),
-    }));
-
-    setMeetups(data);
-    setRefrehing(false);
-    setPage(1);
-    setEndOfList(false);
+    if (page === 1) {
+      setRefrehing(false);
+    } else {
+      setRefrehing(true);
+      setPage(1);
+    }
   }
 
-  async function loadMore(p) {
-    if (!endOfList) {
-      const response = await api.get('meetups', {
-        params: {
-          date: searchDate,
-          page: p,
-        },
-      });
-
-      const data = response.data.map(meetup => ({
-        ...meetup,
-        subscribed: !!meetup.Subscriptions.find(
-          subscription => subscription.user_id === user.id
-        ),
-        formattedDate: format(
-          parseISO(meetup.date),
-          "dd 'of' MMMM, yyyy '-' hh'h'mm",
-          {
-            locale: en,
-          }
-        ),
-      }));
-
-      setMeetups([...meetups, ...data]);
-
-      if (data.length >= 1) {
-        setPage(page + 1);
-      } else {
-        setEndOfList(true);
-      }
+  async function loadMore() {
+    if (!endOfList && !fetching) {
+      setFetching(true);
+      setPage(page + 1);
     }
   }
 
@@ -164,6 +130,9 @@ export default function Dashboard() {
   function handleDateChange(date) {
     setLoading(true);
     setSearchDate(date);
+    setMeetups([]);
+    setEndOfList(false);
+    setPage(1);
   }
 
   return (
@@ -181,7 +150,7 @@ export default function Dashboard() {
             refreshing={refreshing}
             onRefresh={refresh}
             onEndReachedThreshold={0.5}
-            onEndReached={() => loadMore(page + 1)}
+            onEndReached={loadMore}
             renderItem={({ item }) => (
               <Meetup>
                 <Banner source={{ uri: item.banner.url }} />
