@@ -45,7 +45,7 @@ export default function Dashboard() {
         const response = await api.get('meetups', {
           params: {
             date: searchDate,
-            page,
+            page: page === 0 ? 1 : page,
           },
         });
 
@@ -79,19 +79,27 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, searchDate, user.id]);
 
-  async function refresh() {
-    if (page === 1) {
-      setRefrehing(false);
-    } else {
-      setRefrehing(true);
+  function refresh() {
+    setRefrehing(true);
+    setEndOfList(false);
+    setMeetups([]);
+
+    if (page === 0) {
       setPage(1);
+    } else {
+      setPage(0);
     }
   }
 
-  async function loadMore() {
+  function loadMore() {
     if (!endOfList && !fetching) {
       setFetching(true);
-      setPage(page + 1);
+
+      if (page === 0) {
+        setPage(2);
+      } else {
+        setPage(page + 1);
+      }
     }
   }
 
