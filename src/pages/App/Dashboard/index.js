@@ -11,21 +11,9 @@ import Background from '~/components/Background';
 import Header from '~/components/Header';
 import DatePicker from '~/components/DatePicker';
 import EmptyContainer from '~/components/EmptyContainer';
+import Meetup from '~/components/MeetupCard';
 
-import {
-  Container,
-  LoadingIndicator,
-  MeetupList,
-  Meetup,
-  Banner,
-  MeetupBody,
-  MeetupInfo,
-  Title,
-  DateText,
-  Location,
-  Organizer,
-  SubscribeButton,
-} from './styles';
+import { Container, LoadingIndicator, MeetupList } from './styles';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -160,45 +148,12 @@ export default function Dashboard() {
             onEndReachedThreshold={0.5}
             onEndReached={loadMore}
             renderItem={({ item }) => (
-              <Meetup>
-                <Banner source={{ uri: item.banner.url }} />
-                <MeetupBody>
-                  <Title>{item.title}</Title>
-                  <MeetupInfo>
-                    <Icon name="event" size={16} color="rgba(0, 0, 0, 0.6)" />
-                    <DateText>{item.formattedDate}</DateText>
-                  </MeetupInfo>
-                  <MeetupInfo>
-                    <Icon
-                      name="location-on"
-                      size={16}
-                      color="rgba(0, 0, 0, 0.6)"
-                    />
-                    <Location>{item.location}</Location>
-                  </MeetupInfo>
-                  <MeetupInfo>
-                    <Icon name="person" size={16} color="rgba(0, 0, 0, 0.6)" />
-                    <Organizer>{item.user.name}</Organizer>
-                  </MeetupInfo>
-
-                  <SubscribeButton
-                    onPress={() => {
-                      handleSubscribe(item.id);
-                    }}
-                    enabled={!item.past && !item.subscribed}
-                  >
-                    {(() => {
-                      if (item.past) {
-                        return 'Not available anymore';
-                      }
-                      if (item.subscribed) {
-                        return 'Subscribed!';
-                      }
-                      return 'Subscribe';
-                    })()}
-                  </SubscribeButton>
-                </MeetupBody>
-              </Meetup>
+              <Meetup
+                data={item}
+                onPress={() => {
+                  handleSubscribe(item.id);
+                }}
+              />
             )}
           />
         )}
