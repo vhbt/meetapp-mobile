@@ -50,7 +50,6 @@ function Subscriptions({ isFocused }) {
         },
       }));
 
-      console.tron.log(data);
       setSubscriptions(data);
 
       setLoading(false);

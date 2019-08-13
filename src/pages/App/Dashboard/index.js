@@ -56,7 +56,7 @@ export default function Dashboard() {
           ),
           formattedDate: format(
             parseISO(meetup.date),
-            "dd 'of' MMMM, yyyy '-' hh'h'mm",
+            "dd 'of' MMMM, yyyy '-' HH'h'mm",
             {
               locale: en,
             }
@@ -92,7 +92,7 @@ export default function Dashboard() {
   }
 
   function loadMore() {
-    if (!endOfList && !fetching) {
+    if (!endOfList && !fetching && meetups.length >= 5) {
       setFetching(true);
 
       if (page === 0) {
@@ -154,7 +154,7 @@ export default function Dashboard() {
           <MeetupList
             data={meetups}
             keyExtractor={item => String(item.id)}
-            ListEmptyComponent={<EmptyContainer />}
+            ListEmptyComponent={refreshing ? null : <EmptyContainer />}
             refreshing={refreshing}
             onRefresh={refresh}
             onEndReachedThreshold={0.5}
