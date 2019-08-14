@@ -3,7 +3,7 @@ import { ActivityIndicator } from 'react-native';
 
 export const Container = styled.View`
   flex: 1;
-  padding: 20px 30px;
+  padding: 0 30px;
 `;
 
 export const LoadingIndicator = styled(ActivityIndicator)`
