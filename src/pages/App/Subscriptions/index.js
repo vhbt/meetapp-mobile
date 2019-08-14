@@ -75,7 +75,6 @@ function Subscriptions({ isFocused }) {
           return subscription.Meetup.id !== id;
         })
       );
-      console.tron.log(subscriptions);
     } catch (err) {
       if (err.response) {
         showMessage({
